@@ -1,10 +1,8 @@
 package com.araujo.objective.service;
 
-import com.araujo.objective.Exception.ContaNaoEncontradaException;
 import com.araujo.objective.Exception.SaldoInsuficienteException;
 import com.araujo.objective.controller.dto.ContaDTO;
 import com.araujo.objective.controller.dto.TransacaoDTO;
-import com.araujo.objective.entity.Conta;
 import com.araujo.objective.entity.Transacao;
 import com.araujo.objective.mapper.ContaMapper;
 import com.araujo.objective.repository.ContaRepository;
@@ -17,15 +15,17 @@ public class TransacaoService {
 
     private final TransacaoRepository transacaoRepository;
     private final ContaRepository contaRepository;
+    private final ContaService contaService;
 
-    public TransacaoService(TransacaoRepository transacaoRepository, ContaRepository contaRepository) {
+    public TransacaoService(TransacaoRepository transacaoRepository, ContaRepository contaRepository, ContaService contaService) {
         this.transacaoRepository = transacaoRepository;
         this.contaRepository = contaRepository;
+        this.contaService = contaService;
     }
 
     @Transactional
     public ContaDTO createTransacao(TransacaoDTO transacaoDTO) {
-        var conta = validaConta(transacaoDTO.numeroConta());
+        var conta = contaService.buscarConta(transacaoDTO.numeroConta());
 
         var novoSaldo = validaTransacao(transacaoDTO, conta.getSaldo());
         conta.setSaldo(novoSaldo);
@@ -35,11 +35,6 @@ public class TransacaoService {
         transacaoRepository.save(transacao);
 
         return ContaMapper.toContaDTO(conta);
-    }
-
-    private Conta validaConta(Long numeroConta) {
-        return contaRepository.findByNumeroConta(numeroConta)
-                .orElseThrow(ContaNaoEncontradaException::new);
     }
 
     private float validaTransacao(TransacaoDTO transacaoDTO, float saldo) {
