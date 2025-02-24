@@ -8,10 +8,14 @@ import com.araujo.objective.mapper.ContaMapper;
 import com.araujo.objective.repository.ContaRepository;
 import com.araujo.objective.repository.TransacaoRepository;
 import jakarta.transaction.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 @Service
 public class TransacaoService {
+
+    private static final Logger logger = LoggerFactory.getLogger(TransacaoService.class);
 
     private final TransacaoRepository transacaoRepository;
     private final ContaRepository contaRepository;
@@ -25,6 +29,8 @@ public class TransacaoService {
 
     @Transactional
     public ContaDTO createTransacao(TransacaoDTO transacaoDTO) {
+        logger.info("Iniciando o processo de criar transação");
+
         var conta = contaService.buscarConta(transacaoDTO.numeroConta());
 
         var novoSaldo = validaTransacao(transacaoDTO, conta.getSaldo());
